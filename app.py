@@ -1,5 +1,5 @@
 from flask import Flask, request
-import psycopg2
+import psycopg2, json
 
 app = Flask(__name__)
 
@@ -10,7 +10,20 @@ def home():
 @app.route('/item', methods=['POST'])
 def post_item():
     data = request.get_json()
-    sql = f"INSERT INTO todolist(item, status) VALUES('{data['item']}','{data['status']}')"
+    sql = f"INSERT INTO todolist(item, status) VALUES('{data['item']}','{data['status']}') RETURNING \"_lineNumber\""
+    lineNumber = banco(sql)
+    data["_lineNumber"] = lineNumber
+    return data
+
+@app.route('/item', methods=['GET'])
+def get_item():
+    sql = "SELECT * FROM todolist"
+    return banco(sql)
+
+@app.route('/item/<int:lineNumber>', methods=['PATCH'])
+def patch_item(lineNumber):
+    data = request.get_json()
+    sql = f"UPDATE todolist SET item = '{data['item']}', status = '{data['status']}' WHERE \"_lineNumber\" = {lineNumber}"
     banco(sql)
     return data
 
@@ -27,11 +40,21 @@ def banco(sql):
         )
         cursor = conn.cursor() # cursor vai ser a variável para executar os comandos SQL.
         cursor.execute(sql) # executa o comando sql seja insert, select .. etc
+
+        if sql[0:6] == "INSERT":
+            resultado = cursor.fetchone()[0]
+        elif sql[0:6] == "SELECT":
+            resultado = cursor.fetchall() # vai guardar o resultado do select na var resultado
+            colunas = [desc[0] for desc in cursor.description]
+            resultado = json.dumps([dict(zip(colunas, row)) for row in resultado])
+            resultado = json.loads(resultado)
+
         cursor.close() # finaliza o cursor
         conn.commit() # confirma o comando SQL 
         conn.close() # finaliza a conexão
     except psycopg2.Error as e:
         print("Erro na conexão do baaaaaaanco de dados")
+    return resultado
 
 
 if __name__ == '__main__':
