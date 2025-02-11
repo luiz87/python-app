@@ -1,11 +1,11 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 import psycopg2, json
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Olá, Flask"
+    return render_template("index.html")
 
 @app.route('/item', methods=['POST'])
 def post_item():
@@ -26,6 +26,12 @@ def patch_item(lineNumber):
     sql = f"UPDATE todolist SET item = '{data['item']}', status = '{data['status']}' WHERE \"_lineNumber\" = {lineNumber}"
     banco(sql)
     return data
+
+@app.route('/item/<int:lineNumber>', methods=['DELETE'])
+def delete_item(lineNumber):
+    sql = f"DELETE FROM todolist WHERE \"_lineNumber\" = {lineNumber}"
+    banco(sql)
+    return ""
 
 def banco(sql):
     resultado = ""
