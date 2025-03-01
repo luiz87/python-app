@@ -33,6 +33,12 @@ def delete_item(lineNumber):
     banco(sql)
     return ""
 
+@app.route('/login/<string:login>/<string:senha>', methods=['GET'])
+def get_login(login,senha):
+    sql = f"SELECT COUNT(*) ACESSO FROM usuario WHERE login = '{login}' AND senha = '{senha}';"
+    print(sql)
+    return banco(sql)
+
 def banco(sql):
     resultado = ""
     try:
