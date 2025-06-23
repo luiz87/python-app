@@ -17,7 +17,7 @@ def post_item():
 
 @app.route('/item', methods=['GET'])
 def get_item():
-    sql = "SELECT * FROM todolist"
+    sql = "SELECT * FROM todolist ORDER BY 1"
     return banco(sql)
 
 @app.route('/item/<int:lineNumber>', methods=['PATCH'])
