@@ -25,6 +25,7 @@ function gravar() {
             });
         } else {
             patchRow(_lineNumber, obj).then((o) => {
+                obj._lineNumber = _lineNumaber;
                 lsItem[indice] = obj;
                 ataulizarTabela();
             });
